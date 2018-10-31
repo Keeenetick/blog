@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use \Storage;
 
 class User extends Authenticatable
 {
@@ -43,7 +44,7 @@ class User extends Authenticatable
     {
         $user = new static;
         $user->fill($fields);
-        $user->password = bcryt($fields['password']);
+        $user->password = bcrypt($fields['password']);
         $user->save();
 
         return $user;
@@ -58,27 +59,31 @@ class User extends Authenticatable
 
     public function remove()
     {
-        $this->destroy();
+        Storage::delete('uploads/'. $this->image);
+        $this->delete();
     }
 
     public function uploadAvatar($image)
     {
         if($image == null){return;}
-        Storage::delete('uploads/'. $this->image);
+        if($this->avatar != null)
+        {
+            Storage::delete('uploads/'. $this->avatar);
+        }
         $filename = str_random(10).'.'.$image->extension(); //строка,и ее расширение
-        $image->saveAs('uploads',$filename);
-        $this->image = $filename;// в $image закидываем значение из filename
+        $image->storeAs('uploads',$filename);
+        $this->avatar = $filename;// в $image закидываем значение из filename
         $this->save();
         //не забыть зайти в config-> filesystem и в disks заменить public_path(),
     }
 
     public function getImage()
     {
-        if($this->image == null)
+        if($this->avatar == null)
         {
-            return '/img/no-user-image.png';
+            return '/img/no-image.png';
         }
-        return '/uploads/'.$this->image;
+        return '/uploads/'.$this->avatar;
     }
 
     public function makeAdmin()
