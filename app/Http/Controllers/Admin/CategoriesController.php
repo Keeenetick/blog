@@ -37,7 +37,6 @@ class CategoriesController extends Controller
         $category = Category::find($id);
         $category->update($request->all());
         return redirect()->route('categories.index');
-
     }
     public function destroy($id)
     {
