@@ -18,7 +18,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email',
     ];
 
     /**
@@ -44,7 +44,6 @@ class User extends Authenticatable
     {
         $user = new static;
         $user->fill($fields);
-        $user->password = bcrypt($fields['password']);
         $user->save();
 
         return $user;
@@ -52,14 +51,20 @@ class User extends Authenticatable
 
     public function edit($fields)
     {
-        $this->fill($fields);
-        $this->password = bcryt($fields['password']);
+        $this->fill($fields);                    
         $this->save();
+    }
+    public function generatePassword($password)
+    {
+        if($password != null){             //для того, чтобы в БД при не изменении pw, пароль не меняльса 
+            $this->password = bcrypt($password);
+            $this->save();
+            }
     }
 
     public function remove()
     {
-        Storage::delete('uploads/'. $this->image);
+        Storage::delete('uploads/'. $this->avatar);
         $this->delete();
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\User;
 class UsersController extends Controller
@@ -43,6 +44,7 @@ class UsersController extends Controller
             'avatar'=>'nullable|image'
         ]);
        $users = User::add($request->all());     //add это метод с модели
+       $users->generatePassword($request->get('password'));
        $users->uploadAvatar($request->file('avatar'));
 
        return redirect()->route('users.index');
@@ -64,7 +66,9 @@ class UsersController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+
+        return view('admin.users.edit',compact('user'));
     }
 
     /**
@@ -76,7 +80,21 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::find($id);
+        $this->validate($request,[
+            'name'=>'required',
+            'email'=>[
+                'required',
+                'email',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'avatar'=>'nullable|image'
+        ]);
+        $user->edit($request->all());
+        $user->generatePassword($request->get('password'));
+        $user->uploadAvatar($request->file('avatar'));
+        return redirect()->route('users.index');
+        
     }
 
     /**
@@ -87,6 +105,7 @@ class UsersController extends Controller
      */
     public function destroy($id)
     {
-        //
+        User::find($id)->remove(); //remove метод из User
+        return redirect()->route('users.index');
     }
 }
